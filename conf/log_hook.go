@@ -4,7 +4,7 @@
 
 **/
 
-package main
+package conf
 
 import (
 	"fmt"
@@ -23,12 +23,12 @@ func (hook LogHook) Levels() []logrus.Level {
 
 var LogFile *os.File
 
+// Fire 自定义日志钩子 可能存在文件未关闭的情况，或是由程序自动GC回收关闭
 func (hook LogHook) Fire(*logrus.Entry) error {
 	fileName := time.Now().Format("2006-01-02")
 
 	fullPath := fmt.Sprintf("%s/%s.log", Config.Log.DirPath, fileName)
 
-	// 无需多次获取文件句柄
 	if LogFile != nil && LogFile.Name() == fullPath {
 		return nil
 	}

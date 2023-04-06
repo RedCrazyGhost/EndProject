@@ -4,24 +4,24 @@
 
 **/
 
-package main
+package conf
 
 import (
 	"github.com/sirupsen/logrus"
 	"os"
 )
 
+type LogConfig struct {
+	DirPath string
+}
+
 var Log *logrus.Logger
 
 func InitLog() {
-	rootPath, err := os.Getwd()
-	if err != nil {
-		Log.Panic("日志文件夹位置获取出错！", err)
-	}
 	if len(Config.Log.DirPath) == 0 || Config.Log.DirPath == "" {
-		Config.Log.DirPath = rootPath + "/log"
+		Config.Log.DirPath = Config.Application.RootPath + "/log"
 	} else {
-		Config.Log.DirPath = rootPath + "/" + Config.Log.DirPath
+		Config.Log.DirPath = Config.Application.RootPath + "/" + Config.Log.DirPath
 	}
 
 	Log = logrus.New()

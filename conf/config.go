@@ -4,35 +4,32 @@
 
 **/
 
-package main
+package conf
 
 import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+	"os"
 )
 
 type SystemConfig struct {
 	Application ApplicationConfig
 	Server      ServerConfig
-	Datebase    DatabaseConfig
+	Database    DatabaseConfig
 	Log         LogConfig
+	Casbin      CasbinConfig
 }
 type ApplicationConfig struct {
-	Name string
+	Name     string
+	RootPath string
 }
 type ServerConfig struct {
 	Port string
 }
-type DatabaseConfig struct {
-	DSN string
-}
-type LogConfig struct {
-	DirPath string
-}
 
 var Config *SystemConfig
 
-func initConfig() {
+func InitConfig() {
 	Log = logrus.New()
 
 	Log.Info("配置初始化开始！")
@@ -45,6 +42,15 @@ func initConfig() {
 	if err := v.Unmarshal(&Config); err != nil {
 		Log.Panicf("配置文件解析失败！失败原因：%v", err)
 	}
+
+	if len(Config.Application.RootPath) == 0 || Config.Application.RootPath == "" {
+		rootPath, err := os.Getwd()
+		if err != nil {
+			Log.Panicf("应用根地址获取失败！失败原因：%v", err)
+		}
+		Config.Application.RootPath = rootPath
+	}
+
 	Log.Infof("配置初始化完成！配置数据为：%v", Config)
 
 }
