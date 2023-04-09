@@ -34,7 +34,7 @@ func InitConfig() {
 
 	Log.Info("配置初始化开始！")
 	v := viper.New()
-	v.SetConfigFile("./config.yml")
+	v.SetConfigFile("./resources/config.yml")
 	err := v.ReadInConfig()
 	if err != nil {
 		Log.Panicf("配置文件读取失败！失败原因：%v，请正确配置文件./config.yml！", err)
@@ -48,7 +48,8 @@ func InitConfig() {
 		if err != nil {
 			Log.Panicf("应用根地址获取失败！失败原因：%v", err)
 		}
-		Config.Application.RootPath = rootPath
+
+		Config.Application.RootPath = rootPath + "/resources"
 	}
 
 	Log.Infof("配置初始化完成！配置数据为：%v", Config)
