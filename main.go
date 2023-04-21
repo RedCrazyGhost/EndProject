@@ -6,12 +6,21 @@
 
 package main
 
-func init() {
-	initConfig()
+import (
+	"EndProject/conf"
+	"EndProject/controller"
+	"EndProject/model"
+)
 
-	InitLog()
+func init() {
+	conf.InitConfig()
+	conf.InitLog()
+	conf.InitCasbin()
+	conf.InitDB()
+	model.InitModel()
+	controller.InitGin()
 }
 
 func main() {
-	Log.Info(1)
+
 }
