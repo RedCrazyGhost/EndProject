@@ -7,26 +7,28 @@
 package conf
 
 import (
+	"EndProject/core"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
 
-//sub := "user"   // 想要访问资源的用户。
-//	obj := "/admin" // 将被访问的资源。
-//	act := "GET"    // 用户对资源执行的操作。
-//	ok, err := conf.RBAC.Enforce(sub, obj, act)
-//	if err != nil {
-//		return
-//	}
-//	if ok == true {
-//		fmt.Print("YES!")
-//	} else {
-//		fmt.Println("NO!")
-//	}
-
 func RBACHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		role := ""
+		var roleData map[string]interface{}
+		var role string
+
+		UserId, _ := c.GetQuery("UserId")
+		if len(UserId) != 0 {
+			DB.Raw("select * from roles where user_id = ?", UserId).Scan(&roleData)
+			if roleData == nil {
+				role = ""
+			} else {
+				role = roleData["name"].(string)
+			}
+		} else {
+			role = ""
+		}
+
 		method := c.Request.Method
 		path := c.Request.URL.Path
 
@@ -36,7 +38,9 @@ func RBACHandler() gin.HandlerFunc {
 		}
 
 		if !ok {
-			c.JSON(http.StatusUnauthorized, "权限不足！")
+			response := core.Response{C: c}
+			response.Send(http.StatusUnauthorized, "权限不足！", nil)
+			c.Abort()
 		}
 	}
 }
