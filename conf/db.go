@@ -8,6 +8,7 @@ package conf
 
 import (
 	"EndProject/core"
+	"fmt"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
@@ -34,16 +35,21 @@ type TableStruct struct {
 	*core.Struct
 	TableName string
 	Table     *gorm.DB
+	Comment   string
 }
 
 // AddTable 创建数据库表
 func (t *TableStruct) AddTable() {
-	t.Table = DB.Table(t.TableName)
+	t.Table = DB.Table(t.TableName).Set(
+		"gorm:table_options",
+		fmt.Sprintf("ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT '%s'", t.Comment))
 }
 
 // CreateTable 创建数据库表
 func (t *TableStruct) CreateTable() {
-	t.Table = DB.Table(t.TableName)
+	t.Table = DB.Table(t.TableName).Set(
+		"gorm:table_options",
+		fmt.Sprintf("ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT '%s'", t.Comment))
 	CreateTable(t.TableName, t.InterfaceOfValue())
 }
 
