@@ -31,13 +31,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue';
+import {ref, reactive, getCurrentInstance} from 'vue';
 import { useTagsStore } from '../store/tags';
 import { usePermissStore } from '../store/permiss';
 import { useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import type { FormInstance, FormRules } from 'element-plus';
 import { Lock, User } from '@element-plus/icons-vue';
+import axios from "axios";
 
 interface LoginInfo {
 	username: string;
@@ -46,8 +47,8 @@ interface LoginInfo {
 
 const router = useRouter();
 const param = reactive<LoginInfo>({
-	username: 'admin',
-	password: '123123'
+	username: '',
+	password: ''
 });
 
 const rules: FormRules = {
@@ -66,14 +67,16 @@ const submitForm = (formEl: FormInstance | undefined) => {
 	if (!formEl) return;
 	formEl.validate((valid: boolean) => {
 		if (valid) {
-			ElMessage.success('登录成功');
-			localStorage.setItem('ms_username', param.username);
-			const keys = permiss.defaultList[param.username == 'admin' ? 'admin' : 'user'];
-			permiss.handleSet(keys);
-			localStorage.setItem('ms_keys', JSON.stringify(keys));
-			router.push('/');
+
+			axios.post("http://localhost:8080/login",param).then(function (r){
+				localStorage.setItem("UserId",r.data.data.ID)
+				ElMessage.success('登录成功！');
+				router.push('/dashboard');
+			}).catch(function (r) {
+				ElMessage.success('登录失败！');
+			})
 		} else {
-			ElMessage.error('登录成功');
+			ElMessage.error('请检查输入！');
 			return false;
 		}
 	});

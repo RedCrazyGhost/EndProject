@@ -1,176 +1,244 @@
 <template>
 	<div class="container">
-		<div class="schart-box">
-			<div class="content-title">柱状图</div>
+		<el-row :gutter="24">
+			<el-col :span="5"><el-autocomplete
+					v-model="useTable"
+					:fetch-suggestions="querySearchAsync"
+					placeholder="请选择分析的表"
+					@select="handleSelect"
+			/></el-col>
+			<el-col :span="5">
+			<el-input v-model="balanceCol"
+								class="w-50 m-2" placeholder="余额列"/>
+			</el-col>
+			<el-col :span="5">
+				<el-input v-model="amountCol"
+									class="w-50 m-2" placeholder="交易金额"/>
+			</el-col>
+			<el-col :span="5">
+				<el-input v-model="grouCol"
+									class="w-50 m-2" placeholder="聚合列"/>
+			</el-col>
+			<el-button type="primary"    @click="checkTable">分析</el-button>
+		</el-row>
+		<div v-if="checkTableData.length!=0">
+		<div style="text-align: center;color: red">异常数据</div>
+		<el-table :data="checkTableData" border class="table" header-cell-class-name="table-header">
+			<el-table-column v-for="(value,key) in checkTableData[0]" :prop="key" :label="useTableHead.get(key)" align="center"></el-table-column>
+		</el-table>
+		</div>
+		<div class="schart-box" >
 			<schart class="schart" canvasId="bar" :options="options1"></schart>
 		</div>
-		<div class="schart-box">
-			<div class="content-title">折线图</div>
+		<div class="schart-box"  >
 			<schart class="schart" canvasId="line" :options="options2"></schart>
 		</div>
-		<div>异常数据</div>
-		<el-table :data="tableData" border class="table" header-cell-class-name="table-header">
-			<el-table-column prop="col_0" label="序号" width="55" align="center"></el-table-column>
-			<el-table-column prop="col_1" label="摘要"></el-table-column>
-			<el-table-column prop="col_2" label="币别"></el-table-column>
-			<el-table-column prop="col_3" label="钞汇"></el-table-column>
-			<el-table-column prop="col_4" label="交易日期"></el-table-column>
-			<el-table-column prop="col_5" label="交易金额"></el-table-column>
-			<el-table-column prop="col_6" label="账户余额"></el-table-column>
-			<el-table-column prop="col_7" label="交易地点/附言"></el-table-column>
-			<el-table-column prop="col_8" label="对方账号与用户名"></el-table-column>
-		</el-table>
-		<div class="schart-box">
-			<div class="content-title">饼状图</div>
+		<div class="schart-box" >
 			<schart class="schart" canvasId="pie" :options="options3"></schart>
 		</div>
-		<div class="schart-box">
-			<div class="content-title">环形图</div>
+		<div class="schart-box" >
 			<schart class="schart" canvasId="ring" :options="options4"></schart>
 		</div>
-	</div>
+		</div>
 </template>
 
 <script setup lang="ts" name="basecharts">
+import {FormInstance} from "element-plus";
+
+let UserId=localStorage.getItem("UserId")
+
 import Schart from 'vue-schart';
-import {ref} from "vue";
+import {onMounted, ref} from "vue";
+import axios from "axios";
+import object from "async-validator/dist-types/validator/object";
+import app from "../App.vue";
 
-const tableData = ref<TableItem[]>([]);
-// 获取表格数据
-const getData = () => {
-	tableData.value =[
-		{
-			"col_0": "112",
-			"col_1": "消费",
-			"col_2": "人民币元",
-			"col_3": "钞",
-			"col_4": "20221230",
-			"col_5": "-20",
-			"col_6": "124197551.27",
-			"col_7": "支*****店",
-			"col_8": "1*****店"
-		}, {
-			"col_0": "8",
-			"col_1": "消费",
-			"col_2": "人民币元",
-			"col_3": "钞",
-			"col_4": "20220806",
-			"col_5": "-300",
-			"col_6": "123583192.12",
-			"col_7": "支*****店",
-			"col_8": "1*****店"
+const useTable = ref('')
+
+interface TableItem {
+	value: string
+}
+
+const tables = ref<TableItem[]>([])
+
+let timeout: NodeJS.Timeout
+const querySearchAsync = (queryString: string, cb: (arg: any) => void) => {
+	const results = queryString
+			? tables.value.filter(createFilter(queryString))
+			: tables.value
+
+	clearTimeout(timeout)
+	timeout = setTimeout(() => {
+		cb(results)
+	}, 3000 * Math.random())
+}
+const createFilter = (queryString: string) => {
+	return (restaurant: TableItem) => {
+		return (
+				restaurant.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0
+		)
+	}
+}
+
+const handleSelect = (item: TableItem) => {
+	console.log(item)
+	console.log(useTable)
+}
+
+const useTableHead =new Map()
+function useTableHeadConf() {
+	useTableHead.set("checkResult", "检测结果")
+	useTableHead.set("rowNum", "行数")
+	useTableHead.set("failResult", "错误结果")
+}
+
+onMounted(async () => {
+	await axios.get("http://localhost:8080/data/list?UserId="+UserId).then(function (r) {
+		let data=r.data.data
+
+		for(let i=0;i<data.length;i++){
+			let obj=data[i];
+				obj["value"]=obj["TABLE_NAME"]
+				delete  obj["TABLE_NAME"]
+		}
+		tables.value = data
+	})
+})
+
+
+const checkTableData = ref<Object>([]);
+let grouCol=ref();
+let balanceCol=ref();
+let amountCol=ref();
+let options1=ref({})
+let options2=ref({})
+let options3=ref({})
+let options4=ref({})
+async function checkTable() {
+	await axios.get("http://localhost:8080/data/head?UserId="+UserId+"&TableName="+useTable.value).then(function (r) {
+		if (r.data.data!=null){
+			useTableHeadConf()
+
+			for(const item of r.data.data){
+				useTableHead.set(item["col_name"],item["col_comment"])
+			}
+		}else{
+			useTableHead.clear()
+			useTableHeadConf()
+		}
+
+	})
+	// 获取表格数据
+	if (balanceCol.value!=undefined&&amountCol.value!=undefined) {
+		await axios.get("http://localhost:8080/data/check?UserId=" + UserId + "&TableName=" + useTable.value + "&colBalance=" + balanceCol.value + "&colAmount=" + amountCol.value).then(function (r) {
+			if (r.data.data != null) {
+				checkTableData.value = r.data.data
+			} else {
+				checkTableData.value = []
+			}
+
+		})
+	}
+
+	// 聚合
+	if (grouCol.value!=undefined) {
+		await axios.get("http://localhost:8080/data/group?UserId=" + UserId + "&TableName=" + useTable.value + "&GroupCol=" + grouCol.value).then(function (r) {
+			if (r.data.data != null) {
+				let labels = []
+				let data = []
+				for (let item of r.data.data) {
+					labels.push(item.k)
+					data.push(item.v)
+				}
+				options3.value = {
+					type: 'pie',
+					title: {
+						text: '银行交易类型数量图'
+					},
+					legend: {
+						position: 'left'
+					},
+					bgColor: '#fbfbfb',
+					labels: labels,
+					datasets: [
+						{
+							data: data
+						}
+					]
+				};
+			} else {
+			}
+
+		})
+	}
+
+
+
+
+	options1.value = {
+		type: 'bar',
+		title: {
+			text: '银行流水交易数据安全图'
 		},
-		{
-			"col_0": "134",
-			"col_1": "消费",
-			"col_2": "人民币元",
-			"col_3": "钞",
-			"col_4": "20230111",
-			"col_5": "-8000.00",
-			"col_6": "124263086.42",
-			"col_7": "财*****账",
-			"col_8": "1*****账"
-		}
-	]
-};
-getData();
+		bgColor: '#fbfbfb',
+		labels: ['状态'],
+		datasets: [
+			{
+				data: [134]
+			},{
+				fillColor: 'rgba(241, 49, 74, 0.5)',
+				data:[3]
+			}
+		]
+	};
+	options2.value = {
+		type: 'line',
+		title: {
+			text: '银行交易流水趋势图'
+		},
+		bgColor: '#fbfbfb',
+		labels: ['7月',
+			'8月',
+			'9月',
+			'10月',
+			'11月',
+			'12月',
+			'1月',
+		],
+		datasets: [
+			{
+				data: [123581591.72,
+					123596792.12,
+					123588812.62,
+					123590343.27,
+					123819159.74,
+					124397544.27,
+					124371088.42
+				]
+			}
+		]
+	};
 
-const options1 = {
-	type: 'bar',
-	title: {
-		text: '银行流水交易数据安全图'
-	},
-	bgColor: '#fbfbfb',
-	labels: ['状态'],
-	datasets: [
-		{
-			data: [134]
-		},{
-			fillColor: 'rgba(241, 49, 74, 0.5)',
-			data:[3]
-		}
-	]
-};
-const options2 = {
-	type: 'line',
-	title: {
-		text: '银行交易流水趋势图'
-	},
-	bgColor: '#fbfbfb',
-	labels: ['7月',
-		'8月',
-		'9月',
-		'10月',
-		'11月',
-		'12月',
-		'1月',
-	],
-	datasets: [
-		{
-			data: [123581591.72,
-				123596792.12,
-				123588812.62,
-				123590343.27,
-				123819159.74,
-				124397544.27,
-				124371088.42
-			]
-		}
-	]
-};
-const options3 = {
-	type: 'pie',
-	title: {
-		text: '银行交易类型数量图'
-	},
-	legend: {
-		position: 'left'
-	},
-	bgColor: '#fbfbfb',
-	labels: ['消费', '支付机构提现', '电子汇入', '短信服务费', 'ATM存款', '充值', '利息存入','银联入账',
-		'跨行转出',
-		'冲正',
-		'代收付',
-		'消费退货',
-		'转账支取'
-	],
-	datasets: [
-		{
-			data: [89,
-				1,
-				11,
-				6,
-				2,
-				2,
-				2,
-				11,
-				7,
-				3,
-				1,
-				1,
-				1,
-			]
-		}
-	]
-};
-const options4 = {
-	type: 'ring',
-	title: {
-		text: '单笔交易范围'
-	},
-	showValue: false,
-	legend: {
-		position: 'bottom',
-		bottom: 40
-	},
-	bgColor: '#fbfbfb',
-	labels: ['<=100', '<=1000', '>1000'],
-	datasets: [
-		{
-			data: [108, 2, 27]
-		}
-	]
-};
+	options4.value = {
+		type: 'ring',
+		title: {
+			text: '单笔交易范围'
+		},
+		showValue: false,
+		legend: {
+			position: 'bottom',
+			bottom: 40
+		},
+		bgColor: '#fbfbfb',
+		labels: ['<=100', '<=1000', '>1000'],
+		datasets: [
+			{
+				data: [108, 2, 27]
+			}
+		]
+	};
+}
+
 </script>
 
 <style scoped>
