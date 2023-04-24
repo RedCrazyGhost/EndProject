@@ -15,23 +15,26 @@ var Gin *gin.Engine
 
 func InitGin() {
 	Gin = gin.New()
-	Gin.Use(conf.LogrusHandler(), gin.Recovery(), conf.RBACHandler())
+	Gin.Use(conf.LogrusHandler(), gin.Recovery(), conf.CorsHandler(), conf.RBACHandler())
 
 	Gin.POST("/login", Login)
 
 	//用户
+	user := Gin.Group("/user")
 	{
-		//Gin.GET()
+		user.POST("/save", SaveUser)
 	}
 
 	//表数据
 	data := Gin.Group("/data")
 	{
-		data.GET("/getdata", GetData)
-		data.GET("/getdata1", GetData1)
-		data.GET("/getdata2", GetData2)
 		data.POST("/upload", Upload)
-		data.GET("/GetUserTables", GetUserTables)
+		data.GET("/list", GetUserTables)
+		data.GET("/check", CheckDataTable)
+		data.GET("/row", GetRowData)
+		data.GET("/group", GetGroupCount)
+		data.GET("/count", GetTableCount)
+		data.GET("/head", GetTableHead)
 	}
 
 	err := Gin.Run()
