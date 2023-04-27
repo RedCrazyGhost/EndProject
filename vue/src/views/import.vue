@@ -56,11 +56,8 @@ const handleChange = (uploadFile: UploadFile, uploadFiles: UploadFiles) => {
             for (let [key, value] of showTableHead) {
                 obj[key] = meta[key + i].v
             }
-            console.log(obj)
             showTableData.value.push(obj)
         }
-
-
     };
 };
 

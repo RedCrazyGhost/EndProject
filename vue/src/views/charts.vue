@@ -1,49 +1,58 @@
 <template>
 	<div class="container">
 		<el-row :gutter="24">
-			<el-col :span="5"><el-autocomplete
+			<el-col :span="4"><el-autocomplete
 					v-model="useTable"
 					:fetch-suggestions="querySearchAsync"
 					placeholder="请选择分析的表"
 					@select="handleSelect"
 			/></el-col>
-			<el-col :span="5">
+			<el-col :span="4">
+				<el-input v-model="datetimeCol"
+									class="w-50 m-2" placeholder="时间列"/>
+			</el-col>
+			<el-col :span="4">
 			<el-input v-model="balanceCol"
 								class="w-50 m-2" placeholder="余额列"/>
 			</el-col>
-			<el-col :span="5">
+			<el-col :span="4">
 				<el-input v-model="amountCol"
-									class="w-50 m-2" placeholder="交易金额"/>
+									class="w-50 m-2" placeholder="交易金额列"/>
 			</el-col>
-			<el-col :span="5">
+			<el-col :span="4">
 				<el-input v-model="grouCol"
 									class="w-50 m-2" placeholder="聚合列"/>
 			</el-col>
 			<el-button type="primary"    @click="checkTable">分析</el-button>
 		</el-row>
+		<div v-if="useTableHead">
+			<div style="text-align: center">表头信息</div>
+			<el-table :data="useTableHead" border class="table" header-cell-class-name="table-header">
+				<el-table-column v-for="(val,key,index) of useTableHead[0]" :prop="key" :label="key" />
+			</el-table>
+		</div>
 		<div v-if="checkTableData.length!=0">
 		<div style="text-align: center;color: red">异常数据</div>
 		<el-table :data="checkTableData" border class="table" header-cell-class-name="table-header">
-			<el-table-column v-for="(value,key) in checkTableData[0]" :prop="key" :label="useTableHead.get(key)" align="center"></el-table-column>
+			<el-table-column v-for="(value,key) in checkTableData[0]" :prop="key" :label="useCheckTableHead.get(key)" align="center"></el-table-column>
 		</el-table>
 		</div>
-		<div class="schart-box" >
+		<div v-if="options1.type!=undefined" class="schart-box" >
 			<schart class="schart" canvasId="bar" :options="options1"></schart>
 		</div>
-		<div class="schart-box"  >
+		<div v-if="options2.type!=undefined" class="schart-box"  >
 			<schart class="schart" canvasId="line" :options="options2"></schart>
 		</div>
-		<div class="schart-box" >
+		<div v-if="options3.type!=undefined"  class="schart-box" >
 			<schart class="schart" canvasId="pie" :options="options3"></schart>
 		</div>
-		<div class="schart-box" >
+		<div  v-if="options4.type!=undefined"  class="schart-box" >
 			<schart class="schart" canvasId="ring" :options="options4"></schart>
 		</div>
 		</div>
 </template>
 
 <script setup lang="ts" name="basecharts">
-import {FormInstance} from "element-plus";
 
 let UserId=localStorage.getItem("UserId")
 
@@ -80,16 +89,28 @@ const createFilter = (queryString: string) => {
 	}
 }
 
-const handleSelect = (item: TableItem) => {
-	console.log(item)
-	console.log(useTable)
+let useTableHead =ref()
+const handleSelect = async (item: TableItem) => {
+	await axios.get("http://localhost:8080/data/head?UserId=" + UserId + "&TableName=" + useTable.value).then(function (r) {
+		useTableHead.value=[]
+		if (r.data.data != null) {
+			let obj:any={}
+			for(let item of r.data.data){
+				obj[item["col_comment"]]=item["col_name"]
+			}
+			useTableHead.value.push(obj)
+
+		}
+	})
 }
 
-const useTableHead =new Map()
+const useCheckTableHead =new Map()
+
+
 function useTableHeadConf() {
-	useTableHead.set("checkResult", "检测结果")
-	useTableHead.set("rowNum", "行数")
-	useTableHead.set("failResult", "错误结果")
+	useCheckTableHead.set("checkResult", "检测结果")
+	useCheckTableHead.set("rowNum", "行数")
+	useCheckTableHead.set("failResult", "错误结果")
 }
 
 onMounted(async () => {
@@ -105,8 +126,8 @@ onMounted(async () => {
 	})
 })
 
-
 const checkTableData = ref<Object>([]);
+let datetimeCol=ref();
 let grouCol=ref();
 let balanceCol=ref();
 let amountCol=ref();
@@ -120,29 +141,55 @@ async function checkTable() {
 			useTableHeadConf()
 
 			for(const item of r.data.data){
-				useTableHead.set(item["col_name"],item["col_comment"])
+				useCheckTableHead.set(item["col_name"],item["col_comment"])
 			}
 		}else{
-			useTableHead.clear()
+			useCheckTableHead.clear()
 			useTableHeadConf()
+		}
+
+	})
+	let countTable=0
+	//获取数据数量
+	await axios.get("http://localhost:8080/data/count?UserId="+UserId+"&TableName="+useTable.value).then(function (r) {
+		if (r.data.data != null) {
+			countTable=r.data.data.count
+		} else {
+			countTable=0
 		}
 
 	})
 	// 获取表格数据
 	if (balanceCol.value!=undefined&&amountCol.value!=undefined) {
-		await axios.get("http://localhost:8080/data/check?UserId=" + UserId + "&TableName=" + useTable.value + "&colBalance=" + balanceCol.value + "&colAmount=" + amountCol.value).then(function (r) {
+		await axios.get("http://localhost:8080/data/check?UserId=" + UserId + "&TableName=" + useTable.value + "&colBalance=" + useTableHead.value[0][balanceCol.value] + "&colAmount=" + useTableHead.value[0][amountCol.value]).then(function (r) {
 			if (r.data.data != null) {
 				checkTableData.value = r.data.data
+
 			} else {
 				checkTableData.value = []
 			}
-
+			options1.value = {
+				type: 'bar',
+				title: {
+					text: '银行流水交易数据安全图'
+				},
+				bgColor: '#fbfbfb',
+				labels: ['状态'],
+				datasets: [
+					{
+						data: [countTable-checkTableData.value.length]
+					},{
+						fillColor: 'rgba(241, 49, 74, 0.5)',
+						data:[checkTableData.value.length]
+					}
+				]
+			};
 		})
 	}
 
 	// 聚合
 	if (grouCol.value!=undefined) {
-		await axios.get("http://localhost:8080/data/group?UserId=" + UserId + "&TableName=" + useTable.value + "&GroupCol=" + grouCol.value).then(function (r) {
+		await axios.get("http://localhost:8080/data/group?UserId=" + UserId + "&TableName=" + useTable.value + "&GroupCol=" + useTableHead.value[0][grouCol.value]).then(function (r) {
 			if (r.data.data != null) {
 				let labels = []
 				let data = []
@@ -175,68 +222,53 @@ async function checkTable() {
 
 
 
-	options1.value = {
-		type: 'bar',
-		title: {
-			text: '银行流水交易数据安全图'
-		},
-		bgColor: '#fbfbfb',
-		labels: ['状态'],
-		datasets: [
-			{
-				data: [134]
-			},{
-				fillColor: 'rgba(241, 49, 74, 0.5)',
-				data:[3]
-			}
-		]
-	};
-	options2.value = {
-		type: 'line',
-		title: {
-			text: '银行交易流水趋势图'
-		},
-		bgColor: '#fbfbfb',
-		labels: ['7月',
-			'8月',
-			'9月',
-			'10月',
-			'11月',
-			'12月',
-			'1月',
-		],
-		datasets: [
-			{
-				data: [123581591.72,
-					123596792.12,
-					123588812.62,
-					123590343.27,
-					123819159.74,
-					124397544.27,
-					124371088.42
-				]
-			}
-		]
-	};
 
-	options4.value = {
-		type: 'ring',
-		title: {
-			text: '单笔交易范围'
-		},
-		showValue: false,
-		legend: {
-			position: 'bottom',
-			bottom: 40
-		},
-		bgColor: '#fbfbfb',
-		labels: ['<=100', '<=1000', '>1000'],
-		datasets: [
-			{
-				data: [108, 2, 27]
-			}
-		]
-	};
+	// options2.value = {
+	// 	type: 'line',
+	// 	title: {
+	// 		text: '银行交易流水趋势图'
+	// 	},
+	// 	bgColor: '#fbfbfb',
+	// 	labels: ['7月',
+	// 		'8月',
+	// 		'9月',
+	// 		'10月',
+	// 		'11月',
+	// 		'12月',
+	// 		'1月',
+	// 	],
+	// 	datasets: [
+	// 		{
+	// 			data: [123581591.72,
+	// 				123596792.12,
+	// 				123588812.62,
+	// 				123590343.27,
+	// 				123819159.74,
+	// 				124397544.27,
+	// 				124371088.42
+	// 			]
+	// 		}
+	// 	]
+	// };
+	//
+	// options4.value = {
+	// 	type: 'ring',
+	// 	title: {
+	// 		text: '单笔交易范围'
+	// 	},
+	// 	showValue: false,
+	// 	legend: {
+	// 		position: 'bottom',
+	// 		bottom: 40
+	// 	},
+	// 	bgColor: '#fbfbfb',
+	// 	labels: ['<=100', '<=1000', '>1000'],
+	// 	datasets: [
+	// 		{
+	// 			data: [108, 2, 27]
+	// 		}
+	// 	]
+	// };
 }
 
 </script>

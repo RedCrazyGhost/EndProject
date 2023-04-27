@@ -69,11 +69,16 @@ const submitForm = (formEl: FormInstance | undefined) => {
 		if (valid) {
 
 			axios.post("http://localhost:8080/login",param).then(function (r){
-				localStorage.setItem("UserId",r.data.data.ID)
-				ElMessage.success('登录成功！');
-				router.push('/dashboard');
+				if( r.data.data.ID != undefined) {
+					localStorage.setItem("UserId", r.data.data.ID)
+					ElMessage.success('登录成功！');
+					router.push('/dashboard');
+				}else{
+					ElMessage.error('登录失败！');
+
+				}
 			}).catch(function (r) {
-				ElMessage.success('登录失败！');
+				ElMessage.error('登录失败！');
 			})
 		} else {
 			ElMessage.error('请检查输入！');
