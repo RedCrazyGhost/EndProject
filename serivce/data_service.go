@@ -46,7 +46,7 @@ func GetTableStruct(table string) {
 
 // CreateDataTable 创建数据表并且填充数据
 func CreateDataTable(userId, filename string) error {
-	f, err := excelize.OpenFile(conf.Config.Application.RootPath + "/file/" + filename)
+	f, err := excelize.OpenFile(conf.Config.Application.RootPath + "/file/" + userId + "_" + filename)
 	if err != nil {
 		return err
 	}
@@ -127,7 +127,6 @@ on t1.rowNum=t2.rowNum+1
 where ROUND( ROUND(cast(t1.#{col_balance} as float ),2)-ROUND(cast(t1.#{col_amount} as float ),2),2)!=ROUND(cast(t2.#{col_balance} as float ),2);
 `
 	sql = strings.ReplaceAll(sql, "#{table}", tableName)
-
 	//col_balance 余额
 	sql = strings.ReplaceAll(sql, "#{col_balance}", colBalance)
 	//col_amount 交易金额
@@ -136,7 +135,6 @@ where ROUND( ROUND(cast(t1.#{col_balance} as float ),2)-ROUND(cast(t1.#{col_amou
 	var data []map[string]interface{}
 	conf.DB.Raw(sql).Scan(&data)
 	return data
-
 }
 
 // GetRowData 获取表中某行数据

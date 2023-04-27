@@ -37,7 +37,7 @@ func Upload(c *gin.Context) {
 	file, _ := c.FormFile("file")
 	userId, _ := c.GetQuery("UserId")
 
-	dst := conf.Config.Application.RootPath + "/file/" + file.Filename
+	dst := conf.Config.Application.RootPath + "/file/" + userId + "_" + file.Filename
 	// 上传文件至指定的完整文件路径
 	err0 := c.SaveUploadedFile(file, dst)
 	err1 := serivce.CreateDataTable(userId, file.Filename)
