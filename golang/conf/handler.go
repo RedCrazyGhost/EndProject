@@ -7,7 +7,7 @@
 package conf
 
 import (
-	"EndProject/core"
+	"EndProject/golang/core"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )

@@ -1,7 +1,7 @@
 <template>
 	<div class="login-wrap">
 		<div class="ms-login">
-			<div class="ms-title" style="color:black">基于Golang的银行流水数据分析系统应用</div>
+			<div class="ms-title" style="color:black">基于Golang的银行流水数据分析系统</div>
 			<el-form :model="param" :rules="rules" ref="login" label-width="0px" class="ms-content">
 				<el-form-item prop="username">
 					<el-input v-model="param.username" placeholder="username">
@@ -71,6 +71,7 @@ const submitForm = (formEl: FormInstance | undefined) => {
 			axios.post("http://localhost:8080/login",param).then(function (r){
 				if( r.data.data.ID != undefined) {
 					localStorage.setItem("UserId", r.data.data.ID)
+					localStorage.setItem("UserName", r.data.data.UserName)
 					ElMessage.success('登录成功！');
 					router.push('/dashboard');
 				}else{

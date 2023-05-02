@@ -7,7 +7,7 @@
 package conf
 
 import (
-	"EndProject/core"
+	"EndProject/golang/core"
 	"fmt"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"

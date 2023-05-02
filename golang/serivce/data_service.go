@@ -7,8 +7,8 @@
 package serivce
 
 import (
-	"EndProject/conf"
-	"EndProject/core"
+	conf2 "EndProject/golang/conf"
+	"EndProject/golang/core"
 	"fmt"
 	"github.com/xuri/excelize/v2"
 	"regexp"
@@ -21,7 +21,7 @@ func GetTableCount(table string) map[string]interface{} {
 select count(1) as count from #{table};
 `
 	sql = strings.ReplaceAll(sql, "#{table}", table)
-	conf.DB.Raw(sql).Scan(&data)
+	conf2.DB.Raw(sql).Scan(&data)
 	return data
 }
 
@@ -32,7 +32,7 @@ select count(1) as count from #{table};
 
 func GetTableStruct(table string) {
 	var tableStruct map[string]interface{}
-	conf.DB.Raw("show create table ?", table).Scan(tableStruct)
+	conf2.DB.Raw("show create table ?", table).Scan(tableStruct)
 	tabledata := tableStruct["Create Table"]
 	reg := regexp.MustCompile("(?<=`).*(?=`)")
 	if reg == nil { //解释失败，返回nil
@@ -46,7 +46,7 @@ func GetTableStruct(table string) {
 
 // CreateDataTable 创建数据表并且填充数据
 func CreateDataTable(userId, filename string) error {
-	f, err := excelize.OpenFile(conf.Config.Application.RootPath + "/file/" + userId + "_" + filename)
+	f, err := excelize.OpenFile(conf2.Config.Application.RootPath + "/file/" + userId + "_" + filename)
 	if err != nil {
 		return err
 	}
@@ -65,7 +65,7 @@ func CreateDataTable(userId, filename string) error {
 	}
 
 	//table表名规则 UserId_ExelTableName_sheetName
-	newStruct := conf.TableStruct{Struct: core.NewStruct(), TableName: fmt.Sprintf("%s_%s_%s", userId, strings.Split(filename, ".")[0], SheetName)}
+	newStruct := conf2.TableStruct{Struct: core.NewStruct(), TableName: fmt.Sprintf("%s_%s_%s", userId, strings.Split(filename, ".")[0], SheetName)}
 	dataMap := make([]map[string]interface{}, 0)
 	for rowIndex, row := range rows {
 		ColMap := make(map[string]interface{}, 0)
@@ -112,7 +112,7 @@ func CreateDataTable(userId, filename string) error {
 func GetUserTables(userId string) []map[string]interface{} {
 	var data []map[string]interface{}
 	sql := `SELECT distinct TABLE_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME LIKE ?;`
-	conf.DB.Raw(sql, userId+"_%").Scan(&data)
+	conf2.DB.Raw(sql, userId+"_%").Scan(&data)
 	return data
 }
 
@@ -133,7 +133,7 @@ where ROUND( ROUND(cast(t1.#{col_balance} as float ),2)-ROUND(cast(t1.#{col_amou
 	sql = strings.ReplaceAll(sql, "#{col_amount}", colAmount)
 
 	var data []map[string]interface{}
-	conf.DB.Raw(sql).Scan(&data)
+	conf2.DB.Raw(sql).Scan(&data)
 	return data
 }
 
@@ -144,7 +144,7 @@ select * from (select(@rowNum1:=@rowNum1+1) as rowNum,t.* from #{table} t,(selec
 	sql = strings.ReplaceAll(sql, "#{table}", tableName)
 	sql = strings.ReplaceAll(sql, "#{rowNum}", rowNum)
 	var data map[string]interface{}
-	conf.DB.Raw(sql).Scan(&data)
+	conf2.DB.Raw(sql).Scan(&data)
 	return data
 }
 
@@ -156,7 +156,7 @@ select #{groupCol} as k ,count(#{groupCol}) as v from #{table} group by #{groupC
 	sql = strings.ReplaceAll(sql, "#{table}", tableName)
 	sql = strings.ReplaceAll(sql, "#{groupCol}", groupCol)
 	var data []map[string]interface{}
-	conf.DB.Raw(sql).Scan(&data)
+	conf2.DB.Raw(sql).Scan(&data)
 	return data
 }
 
@@ -164,6 +164,6 @@ func GetTableHead(tableName string) []map[string]interface{} {
 	sql := `select COLUMN_NAME as col_name, COLUMN_COMMENT col_comment from INFORMATION_SCHEMA.COLUMNS Where table_name ='#{table}';`
 	sql = strings.ReplaceAll(sql, "#{table}", tableName)
 	var data []map[string]interface{}
-	conf.DB.Raw(sql).Scan(&data)
+	conf2.DB.Raw(sql).Scan(&data)
 	return data
 }

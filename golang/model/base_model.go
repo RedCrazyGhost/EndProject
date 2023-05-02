@@ -7,7 +7,7 @@
 package model
 
 import (
-	"EndProject/conf"
+	"EndProject/golang/conf"
 	"time"
 )
 

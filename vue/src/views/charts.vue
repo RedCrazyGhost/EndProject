@@ -8,20 +8,24 @@
 					@select="handleSelect"
 			/></el-col>
 			<el-col :span="4">
-				<el-input v-model="datetimeCol"
-									class="w-50 m-2" placeholder="时间列"/>
+				<el-select v-model="datetimeCol" clearable placeholder="请选择时间列">
+					<el-option v-for="item in colsOptions" :key="'item.value'-1" :label="item.label" :value="item.value"/>
+				</el-select>
 			</el-col>
 			<el-col :span="4">
-			<el-input v-model="balanceCol"
-								class="w-50 m-2" placeholder="余额列"/>
+				<el-select v-model="balanceCol" clearable placeholder="请选择余额列">
+					<el-option v-for="item in colsOptions" :key="'item.value'-2" :label="item.label" :value="item.value"/>
+				</el-select>
 			</el-col>
 			<el-col :span="4">
-				<el-input v-model="amountCol"
-									class="w-50 m-2" placeholder="交易金额列"/>
+				<el-select v-model="amountCol" clearable placeholder="请选择交易金额列">
+					<el-option v-for="item in colsOptions" :key="'item.value'-3" :label="item.label" :value="item.value"/>
+				</el-select>
 			</el-col>
 			<el-col :span="4">
-				<el-input v-model="grouCol"
-									class="w-50 m-2" placeholder="聚合列"/>
+				<el-select v-model="grouCol" clearable placeholder="请选择聚合列">
+					<el-option v-for="item in colsOptions" :key="'item.value'-4" :label="item.label" :value="item.value"/>
+				</el-select>
 			</el-col>
 			<el-button type="primary"    @click="checkTable">分析</el-button>
 		</el-row>
@@ -38,17 +42,17 @@
 		</el-table>
 		</div>
 		<div v-if="options1.type!=undefined" class="schart-box" >
-			<schart class="schart" canvasId="bar" :options="options1"></schart>
+			<schart class="schart" canvasId="pie-1"  :options="options1"></schart>
 		</div>
-		<div v-if="options2.type!=undefined" class="schart-box"  >
-			<schart class="schart" canvasId="line" :options="options2"></schart>
-		</div>
+<!--		<div v-if="options2.type!=undefined" class="schart-box"  >-->
+<!--			<schart class="schart" canvasId="line" :options="options2"></schart>-->
+<!--		</div>-->
 		<div v-if="options3.type!=undefined"  class="schart-box" >
-			<schart class="schart" canvasId="pie" :options="options3"></schart>
+			<schart class="schart" canvasId="pie-2" :options="options3"></schart>
 		</div>
-		<div  v-if="options4.type!=undefined"  class="schart-box" >
-			<schart class="schart" canvasId="ring" :options="options4"></schart>
-		</div>
+<!--		<div  v-if="options4.type!=undefined"  class="schart-box" >-->
+<!--			<schart class="schart" canvasId="ring" :options="options4"></schart>-->
+<!--		</div>-->
 		</div>
 </template>
 
@@ -93,23 +97,26 @@ let useTableHead =ref()
 const handleSelect = async (item: TableItem) => {
 	await axios.get("http://localhost:8080/data/head?UserId=" + UserId + "&TableName=" + useTable.value).then(function (r) {
 		useTableHead.value=[]
+		colsOptions.value =[]
 		if (r.data.data != null) {
 			let obj:any={}
 			for(let item of r.data.data){
 				obj[item["col_comment"]]=item["col_name"]
+				colsOptions.value.push({value:item["col_comment"],label:item["col_comment"]})
 			}
 			useTableHead.value.push(obj)
-
+			console.log(colsOptions)
 		}
 	})
 }
+
 
 const useCheckTableHead =new Map()
 
 
 function useTableHeadConf() {
 	useCheckTableHead.set("checkResult", "检测结果")
-	useCheckTableHead.set("rowNum", "行数")
+	useCheckTableHead.set("rowNum", "行号")
 	useCheckTableHead.set("failResult", "错误结果")
 }
 
@@ -131,6 +138,7 @@ let datetimeCol=ref();
 let grouCol=ref();
 let balanceCol=ref();
 let amountCol=ref();
+let colsOptions=ref([])
 let options1=ref({})
 let options2=ref({})
 let options3=ref({})
@@ -169,18 +177,15 @@ async function checkTable() {
 				checkTableData.value = []
 			}
 			options1.value = {
-				type: 'bar',
+				type: 'pie',
 				title: {
-					text: '银行流水交易数据安全图'
+					text: '数据健康饼状图'
 				},
 				bgColor: '#fbfbfb',
-				labels: ['状态'],
+				labels: ['正常','异常'],
 				datasets: [
 					{
-						data: [countTable-checkTableData.value.length]
-					},{
-						fillColor: 'rgba(241, 49, 74, 0.5)',
-						data:[checkTableData.value.length]
+						data: [countTable-checkTableData.value.length,checkTableData.value.length]
 					}
 				]
 			};
@@ -200,7 +205,7 @@ async function checkTable() {
 				options3.value = {
 					type: 'pie',
 					title: {
-						text: '银行交易类型数量图'
+						text: '聚类饼状图'
 					},
 					legend: {
 						position: 'left'
@@ -219,6 +224,9 @@ async function checkTable() {
 		})
 	}
 
+	if (datetimeCol.value !=undefined){
+
+	}
 
 
 

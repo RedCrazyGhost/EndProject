@@ -2,21 +2,13 @@
 	<div>
 		<el-row :gutter="20">
 			<el-col :span="8">
-				<el-card shadow="hover" class="mgb20" style="height: 252px">
+				<el-card shadow="hover" class="mgb20">
 					<div class="user-info">
 						<el-avatar :size="120" :src="imgurl" />
 						<div class="user-info-cont">
 							<div class="user-info-name">{{ name }}</div>
 							<div>{{ role }}</div>
 						</div>
-					</div>
-					<div class="user-info-list">
-						上次登录时间：
-						<span>2023-04-09</span>
-					</div>
-					<div class="user-info-list">
-						上次登录地点：
-						<span>湖北</span>
 					</div>
 				</el-card>
 			</el-col>
@@ -65,8 +57,8 @@
 import {ref,onMounted} from "vue";
 import imgurl from '../assets/img/img.jpeg';
 
-const name = localStorage.getItem('ms_username');
-const role: string = name === 'admin' ? '超级管理员' : '普通用户';
+const name = localStorage.getItem('UserName');
+const role: string = name === 'zhan' ? '超级管理员' : '普通用户';
 
 </script>
 
@@ -130,7 +122,6 @@ const role: string = name === 'admin' ? '超级管理员' : '普通用户';
 	display: flex;
 	align-items: center;
 	padding-bottom: 20px;
-	border-bottom: 2px solid #ccc;
 	margin-bottom: 20px;
 }
 

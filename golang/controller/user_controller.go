@@ -7,9 +7,9 @@
 package controller
 
 import (
-	"EndProject/core"
-	"EndProject/model"
-	"EndProject/serivce"
+	"EndProject/golang/core"
+	"EndProject/golang/model"
+	"EndProject/golang/serivce"
 	"fmt"
 	"github.com/gin-gonic/gin"
 )

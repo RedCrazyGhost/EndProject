@@ -7,7 +7,7 @@
 package controller
 
 import (
-	"EndProject/conf"
+	conf2 "EndProject/golang/conf"
 	"github.com/gin-gonic/gin"
 )
 
@@ -15,7 +15,7 @@ var Gin *gin.Engine
 
 func InitGin() {
 	Gin = gin.New()
-	Gin.Use(conf.LogrusHandler(), gin.Recovery(), conf.CorsHandler(), conf.RBACHandler())
+	Gin.Use(conf2.LogrusHandler(), gin.Recovery(), conf2.CorsHandler(), conf2.RBACHandler())
 
 	Gin.POST("/login", Login)
 
@@ -39,7 +39,7 @@ func InitGin() {
 
 	err := Gin.Run()
 	if err != nil {
-		conf.Log.Panicf("服务器启动失败！失败原因：%v", err)
+		conf2.Log.Panicf("服务器启动失败！失败原因：%v", err)
 	}
 
 }

@@ -7,9 +7,9 @@
 package controller
 
 import (
-	"EndProject/conf"
-	"EndProject/core"
-	"EndProject/serivce"
+	conf2 "EndProject/golang/conf"
+	"EndProject/golang/core"
+	"EndProject/golang/serivce"
 	"fmt"
 	"github.com/gin-gonic/gin"
 )
@@ -18,7 +18,7 @@ import (
 func GetData(c *gin.Context) {
 	response := core.Response{C: c}
 	var data []map[string]interface{}
-	conf.DB.Table("test_test").Select("col_0,col_1,col_2,col_3,col_4,col_5,col_6,concat(left(col_7,1),'*****',right(col_7,1)) as col_7,concat(left(col_8,1),'*****',right(col_8,1)) as col_8").Scan(&data)
+	conf2.DB.Table("test_test").Select("col_0,col_1,col_2,col_3,col_4,col_5,col_6,concat(left(col_7,1),'*****',right(col_7,1)) as col_7,concat(left(col_8,1),'*****',right(col_8,1)) as col_8").Scan(&data)
 	response.SuccessData(data)
 }
 
@@ -26,7 +26,7 @@ func GetData(c *gin.Context) {
 func GetData1(c *gin.Context) {
 	response := core.Response{C: c}
 	var data []map[string]interface{}
-	conf.DB.Table("test_test").Select("date(col_4) as date,col_5 as price").Scan(&data)
+	conf2.DB.Table("test_test").Select("date(col_4) as date,col_5 as price").Scan(&data)
 	response.SuccessData(data)
 }
 
@@ -37,7 +37,7 @@ func Upload(c *gin.Context) {
 	file, _ := c.FormFile("file")
 	userId, _ := c.GetQuery("UserId")
 
-	dst := conf.Config.Application.RootPath + "/file/" + userId + "_" + file.Filename
+	dst := conf2.Config.Application.RootPath + "/file/" + userId + "_" + file.Filename
 	// 上传文件至指定的完整文件路径
 	err0 := c.SaveUploadedFile(file, dst)
 	err1 := serivce.CreateDataTable(userId, file.Filename)
