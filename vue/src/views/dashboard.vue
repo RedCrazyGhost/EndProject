@@ -12,43 +12,6 @@
 					</div>
 				</el-card>
 			</el-col>
-			<el-col :span="16">
-				<el-row :gutter="20" class="mgb20">
-					<el-col :span="8">
-						<el-card shadow="hover" :body-style="{ padding: '0px' }">
-							<div class="grid-content grid-con-1">
-								<el-icon class="grid-con-icon"><User /></el-icon>
-								<div class="grid-cont-right">
-									<div class="grid-num">1</div>
-									<div>用户数量</div>
-								</div>
-							</div>
-						</el-card>
-					</el-col>
-					<el-col :span="8">
-						<el-card shadow="hover" :body-style="{ padding: '0px' }">
-							<div class="grid-content grid-con-2">
-								<el-icon class="grid-con-icon"><SuccessFilled /></el-icon>
-								<div class="grid-cont-right">
-									<div class="grid-num">134</div>
-									<div>正常交易</div>
-								</div>
-							</div>
-						</el-card>
-					</el-col>
-					<el-col :span="8">
-						<el-card shadow="hover" :body-style="{ padding: '0px' }">
-							<div class="grid-content grid-con-3">
-								<el-icon class="grid-con-icon"><WarningFilled/></el-icon>
-								<div class="grid-cont-right">
-									<div class="grid-num">3</div>
-									<div>异常交易</div>
-								</div>
-							</div>
-						</el-card>
-					</el-col>
-				</el-row>
-			</el-col>
 		</el-row>
 	</div>
 </template>

@@ -7,11 +7,11 @@
 					placeholder="请选择分析的表"
 					@select="handleSelect"
 			/></el-col>
-			<el-col :span="4">
-				<el-select v-model="datetimeCol" clearable placeholder="请选择时间列">
-					<el-option v-for="item in colsOptions" :key="'item.value'-1" :label="item.label" :value="item.value"/>
-				</el-select>
-			</el-col>
+<!--			<el-col :span="4">-->
+<!--				<el-select v-model="datetimeCol" clearable placeholder="请选择时间列">-->
+<!--					<el-option v-for="item in colsOptions" :key="'item.value'-1" :label="item.label" :value="item.value"/>-->
+<!--				</el-select>-->
+<!--			</el-col>-->
 			<el-col :span="4">
 				<el-select v-model="balanceCol" clearable placeholder="请选择余额列">
 					<el-option v-for="item in colsOptions" :key="'item.value'-2" :label="item.label" :value="item.value"/>
@@ -44,15 +44,9 @@
 		<div v-if="options1.type!=undefined" class="schart-box" >
 			<schart class="schart" canvasId="pie-1"  :options="options1"></schart>
 		</div>
-<!--		<div v-if="options2.type!=undefined" class="schart-box"  >-->
-<!--			<schart class="schart" canvasId="line" :options="options2"></schart>-->
-<!--		</div>-->
 		<div v-if="options3.type!=undefined"  class="schart-box" >
 			<schart class="schart" canvasId="pie-2" :options="options3"></schart>
 		</div>
-<!--		<div  v-if="options4.type!=undefined"  class="schart-box" >-->
-<!--			<schart class="schart" canvasId="ring" :options="options4"></schart>-->
-<!--		</div>-->
 		</div>
 </template>
 
@@ -224,59 +218,6 @@ async function checkTable() {
 		})
 	}
 
-	if (datetimeCol.value !=undefined){
-
-	}
-
-
-
-
-	// options2.value = {
-	// 	type: 'line',
-	// 	title: {
-	// 		text: '银行交易流水趋势图'
-	// 	},
-	// 	bgColor: '#fbfbfb',
-	// 	labels: ['7月',
-	// 		'8月',
-	// 		'9月',
-	// 		'10月',
-	// 		'11月',
-	// 		'12月',
-	// 		'1月',
-	// 	],
-	// 	datasets: [
-	// 		{
-	// 			data: [123581591.72,
-	// 				123596792.12,
-	// 				123588812.62,
-	// 				123590343.27,
-	// 				123819159.74,
-	// 				124397544.27,
-	// 				124371088.42
-	// 			]
-	// 		}
-	// 	]
-	// };
-	//
-	// options4.value = {
-	// 	type: 'ring',
-	// 	title: {
-	// 		text: '单笔交易范围'
-	// 	},
-	// 	showValue: false,
-	// 	legend: {
-	// 		position: 'bottom',
-	// 		bottom: 40
-	// 	},
-	// 	bgColor: '#fbfbfb',
-	// 	labels: ['<=100', '<=1000', '>1000'],
-	// 	datasets: [
-	// 		{
-	// 			data: [108, 2, 27]
-	// 		}
-	// 	]
-	// };
 }
 
 </script>
